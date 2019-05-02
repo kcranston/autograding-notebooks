@@ -1,7 +1,9 @@
 Sample notebooks and notes for a project aimed at autograding Jupyter notebooks
 for [EarthLab](https://www.earthdatascience.org/) at the University of Colorado.
 
+We are using [nbgrader](https://github.com/jupyter/nbgrader) for this project, and adding functionality for partial credit in [this fork](https://github.com/kcranston/nbgrader).
+
 See `nbgrader_local_dev.md` for notes on setting up a local nbgrader workflow.
 
 The notebooks dir contains example notebooks for the project. Autograding
-functionality will not be visible if nbgrader is not installed. 
+functionality will not be visible if nbgrader is not installed.
