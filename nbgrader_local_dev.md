@@ -15,15 +15,15 @@ in the browser.
 
 **Which nbgrader?**
 
-To simply test release version of nbgrader:
+To simply use the release version of nbgrader:
 
-   `pip install nbgrader` (or conda)
+   `pip install nbgrader` (or use conda)
 
-To follow along with the implementation of partial credit, use my fork (as of May 2, the master branch is unchanged from base nbgrader):
+To follow along with the implementation of partial credit, use the partial_credit branch of the [kcranston fork](https://github.com/kcranston/nbgrader):
 
-   `pip install --upgrade git+https://github.com/kcranston/nbgrader.git`
+   `pip install --upgrade git+https://github.com/kcranston/nbgrader.git@partial_credit`
 
-If you want to make changes to nbgrader code and test on the fly, install from local git repo:
+If you want to make local changes to nbgrader code and test on the fly, install from local git repo after cloning the nbgrader repo you want:
 
    `pip install -e /path_to_local_repo`
 
@@ -31,36 +31,38 @@ Once you have picked your pip command, simply follow the [official installation 
 
 ## Setup nbgrader course locally
 
+These steps will get a course setup on your local machine. You will play the role of instructor and student in this case, in order to test the full workflow.
+
 1. Use the quickstart command to create a course:
 
      `nbgrader quickstart course-name`.
 
-     This will create a course directory called `course_name` with one assignment called `ps1`, some sample notebooks and a config.
+     This will create a course directory called `course-name` with one assignment called `ps1`, some sample notebooks and a config.
 
-1. Create the exchange directory (where we will release and submit assignments):
+1. Create the exchange directory (the directory that serves as the common location for instructors and students to share assignment files):
 
-  `mkdir /tmp/exchange`
+    `mkdir /tmp/exchange`
 
-1. Edit the config:
+1. Edit the config in the course directory:
 
    * add `c.Exchange.root = "/tmp/exchange"` after the `c.Exchange.course_id` line
    * delete the students (the line starting with `c.CourseDirectory.db_students `)
 
 1. Add yourself as a student, using your the username on your local computer (`$USER`) as the student id:
 
-  `nbgrader db student add studentid --last-name=lastname --first-name=firstname`
+    `nbgrader db student add studentid --last-name=lastname --first-name=firstname`
 
 1. Create a student directory (create this anywhere but not inside the course directory, or the exchange directory):
 
-  `mkdir student_dir`
+    `mkdir student_dir`
 
 1. Create a `nbgrader_config.py` file in the student dir. It only needs three lines:
 
-  ```
-  c = get_config()
-  c.Exchange.root = '/tmp/exchange'
-  c.Exchange.course_id = 'course-name'
-  ```
+    ```
+    c = get_config()
+    c.Exchange.root = '/tmp/exchange'
+    c.Exchange.course_id = 'course-name'
+    ```
 
 ## Edit assignment
 
@@ -80,16 +82,16 @@ The basic workflow (see [nbgrader docs](https://nbgrader.readthedocs.io/en/stabl
 
 * (instructor) validate notebooks
 * (instructor) assign notebooks (create the student version)
-* (instructor) release notebooks (copy to exchange dir)  
+* (instructor) release notebooks (copy student version to exchange dir)  
 * (student) fetch notebooks (from exchange dir)
 * (student) do work, save notebooks
 * (student) submit notebooks (to exchange dir)
 * (instructor) collect notebooks (from exchange dir)
 * (instructor) autograde notebooks
 * (instructor) manually grade notebooks
-* (instructor) generate feedback
+* (instructor) generate feedback (html reports that you can provide to students)
 
-From the command line, assuming assignment named `ps1`:
+You can run almost the entire workflow from the command line. Here are the steps, assuming an assignment named `ps1`:
 
 In `course_dir` (i.e. as instructor):
 
@@ -106,3 +108,4 @@ In `student_dir` (i.e. as student):
 In `course_dir` (i.e. as instructor):
 * `nbgrader collect ps1`
 * `nbgrader autograde "ps1"`
+* `nbgrader feedback ps1`
