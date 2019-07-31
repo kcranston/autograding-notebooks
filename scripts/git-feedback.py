@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Script to push nbgrader html feedback reports to student repos for a given
+# assignment in a GitHub classroom course
+# Script provided by @jedbrown 
 
 import glob
 import pandas
