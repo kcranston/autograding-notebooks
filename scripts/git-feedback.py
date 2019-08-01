@@ -19,7 +19,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--roster', help='CSV roster file', default='roster.csv')
     parser.add_argument('--assignment', help='Name of assignment, e.g., hw1-rootfinding', required=True)
-    parser.add_argument('--repo_location',help='Directory containing cloned student repos', required=True)
     parser.add_argument('-n', '--dry-run', help='Print git statements but do not run', action='store_true')
     args = parser.parse_args()
 
@@ -32,23 +31,22 @@ if __name__ == '__main__':
         except ValueError: # Lack of feedback usually means student did not submit homework
             print(f'No feedback for {identikey}')
             continue
-        # local student repos named assignment-github_username
-        repo_name = "{}-{}".format(assignment,github_username)
-        destdir = os.path.join(repo_location, repo_name)
+
+        dest = os.path.join(destdir, 'feedback.html')
         if os.path.exists(destdir):
             print("Copying feedback from {} to {}".format(source,destdir))
             shutil.copyfile(source, dest)
         else:
             print('Destination directory does not exist: {}'.format(destdir))
         git = ['git', '-C', destdir]
-        feedback_file = os.path.basename(source)
+        
         if (args.dry_run):
             print("{} add {}".format(git,feedback_file))
             print("{} commit -m \"Add feedback\"".format(git))
             print("{} push".format(git))
         else:
             try:
-                subprocess.check_call(git + ['add', feedback_file])
+                subprocess.check_call(git + ['add', os.path.basename(dest)])
                 subprocess.check_call(git + ['commit', '-mAdd feedback'])
                 subprocess.check_call(git + ['push'])
             except subprocess.CalledProcessError:
