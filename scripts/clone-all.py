@@ -4,6 +4,7 @@
 # into a directory called `submitted` in the correct format for nbgrader
 # Modifed from script received from @jedbrown to remove specific course and
 # repo references
+# assumes that cwd is nbgrader course dir
 
 import pandas as pd
 import os
