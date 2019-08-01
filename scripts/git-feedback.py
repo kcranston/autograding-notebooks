@@ -23,7 +23,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     assignment = args.assignment
-    repo_location = args.repo_location
+
     roster = read_roster(args.roster)
     for identikey, (github_username,) in roster.iterrows():
         try:
@@ -32,6 +32,7 @@ if __name__ == '__main__':
             print(f'No feedback for {identikey}')
             continue
 
+        destdir = os.path.join('submitted', github_username, assignment)
         dest = os.path.join(destdir, 'feedback.html')
         if os.path.exists(destdir):
             print("Copying feedback from {} to {}".format(source,destdir))
@@ -39,9 +40,9 @@ if __name__ == '__main__':
         else:
             print('Destination directory does not exist: {}'.format(destdir))
         git = ['git', '-C', destdir]
-        
+
         if (args.dry_run):
-            print("{} add {}".format(git,feedback_file))
+            print("{} add {}".format(git,os.path.basename(dest)))
             print("{} commit -m \"Add feedback\"".format(git))
             print("{} push".format(git))
         else:
