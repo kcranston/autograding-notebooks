@@ -1,6 +1,8 @@
 # Create template repo for github classroom from released notebooks
 # for assignment in nbgrader directory; (fails if template dir already exists)
-# Name of template repo will be assignment-template
+
+# Template repo with name assignment-template must already exist in
+# GitHub organization
 
 import sys
 import os

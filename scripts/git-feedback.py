@@ -14,6 +14,8 @@ def run_cmd(cmd,cmdargs,dry_run):
     if (dry_run):
         cmdargs.insert(1,'--dry-run')
         print(cmd+cmdargs)
+    # note that commit when there aren't any changes will produce a
+    # non-zero exit code (even with dry-run)
     subprocess.check_output(cmd + cmdargs)
 
 def do_git_things(destdir, dest, dry_run):
