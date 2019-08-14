@@ -1,12 +1,28 @@
-# create template repo for github classroom from
-# nbgrader directory; creates in current working dir (fails if
-# template dir already exists)
+# Create template repo for github classroom from released notebooks
+# for assignment in nbgrader directory; (fails if template dir already exists)
+# Name of template repo will be assignment-template
 
+import sys
 import os
 import fnmatch
 import argparse
 import subprocess
 import shutil
+
+def add_gitignore(repo_name):
+    filename = os.path.join(repo_name, '.gitignore')
+    with open(filename, 'w') as f:
+        f.write(".DStore\n")
+        f.write(".ipynb_checkpoints\n")
+
+def add_readme(repo_name, assignment):
+    # create a stub of a readme file for the template repo
+    print("Creating readme")
+    filename = os.path.join(repo_name, 'readme.md')
+    with open(filename, 'w') as f:
+        f.write("# README\n")
+        f.write("\nThis repository contains the notebooks for assignment {}. Complete the homework in each .ipynb notebook, commit your work, and push the changes to github. Your instructor will pull the completed assignemnt after the deadline.\n".format(assignment))
+        f.write("\nOnce grading is complete, your instructor will push the results to a file called `feedback.html`. You will need to pull the changes to your local copy and open this file in a browser to view (github will not render html files).\n")
 
 def get_notebooks(nbgrader_dir, assignment):
     # get the list of notebooks for this assignment
@@ -21,62 +37,82 @@ def get_notebooks(nbgrader_dir, assignment):
     print("Found {} notebooks".format(len(notebooks)))
     return notebooks
 
-def create_readme():
-    # create a stub of a readme file for the template repo
-    print("Creating readme")
+# does all of the local git things but does not push to github
+def do_local_git_things(repo_name):
+    git = ['git', '-C', repo_name]
+    try:
+        if not os.path.exists(os.path.join(repo_name,'.git')):
+            print("initializing git repo")
+            subprocess.check_output(git + ['init'])
+        for file in os.listdir(repo_name):
+            if fnmatch.fnmatch(file, '*.ipynb'):
+                subprocess.check_call(git + ['add', file])
+        subprocess.check_output(git + ['commit', '-mInitial commit'])
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+        print('One or more git actions failed; exiting')
 
-def do_git_things(org_name,repo_name,no_push):
-    # init the repo and push to the github classroom org:
+def push_to_github(org_name,repo_name):
+    # push to the github classroom org:
     # git remote add origin git@github.com:earth-analytics-edu/repo_name.git
     # git push -u origin master
 
     repo_url = "git@github.com:{}/{}.git".format(org_name,repo_name)
     git = ['git', '-C', repo_name]
 
-    # note that it is harmless to call git add, commit, push if no changes
     try:
-        if not os.path.exists(os.path.join(repo_name,'.git')):
-            print("initializing git repo")
-            subprocess.check_call(git + ['init'])
-        for file in os.listdir(repo_name):
-            if fnmatch.fnmatch(file, '*.ipynb'):
-                subprocess.check_call(git + ['add', file])
-        subprocess.check_call(git + ['commit', '-mInitial commit'])
-        subprocess.check_call(git + ['remote','add','origin',repo_url])
-        if not no_push:
-            print("pushing to github repo {}".format(repo_url))
-            subprocess.check_call(git + ['push','-u','origin','master'])
-    except subprocess.CalledProcessError:
-        print('Skipping {}'.format(destdir))
+        print("pushing to github repo {}".format(repo_url))
+        subprocess.check_output(git + ['remote','add','origin',repo_url])
+        subprocess.check_output(git + ['push','-u','origin','master'])
+    except subprocess.CalledProcessError as e:
+        print(e.output)
+        print('Git push failed')
 
 if __name__ == '__main__':
     # argument parsing
     parser = argparse.ArgumentParser()
+    parser.add_argument('mode',
+        help="Whether to {create} local repo, {push} to github, or both",
+        choices=["create", "push", "both"],
+        default="both",
+        nargs='?',
+        )
     parser.add_argument('nbgrader_dir', help='path to nbgrader directory')
-    parser.add_argument('assignment', help='assignment name, e.g., "2019-01-31-stability" or "hw1-rootfinding"')
-    parser.add_argument('--org_name', help='name of GitHub Classroom organization')
-    parser.add_argument('--repo_name', help='name of github repo; must already exist')
-    parser.add_argument('-n', '--no_push', help='Do not push to github; maybe you want to add a readme first?', action='store_true')
+    parser.add_argument('assignment', help='assignment name, e.g., "2019-01-31-stability" or "ea-04-bootcamp-spatial-data"')
+    parser.add_argument('--org_name', help='name of GitHub Classroom organization; default = earth-analytics-edu', default="earth-analytics-edu")
     args = parser.parse_args()
 
     # notebooks = get_notebooks(args.nbgrader_dir, args.assignment)
     # cp notebooks to new dir and initialize as git repo
-    try:
-        os.mkdir(args.repo_name)
-        print("Initializing git repo in {}".format(args.repo_name))
-    except FileExistsError as fee:
-        print("directory {} already exists; exiting".format(args.repo_name))
+    assignment = args.assignment
+    repo_name = assignment + '-template'
+    mode = args.mode
 
-    # copy notebooks to repo
-    print("Getting notebooks")
-    release_dir = os.path.join(args.nbgrader_dir,'release', args.assignment)
-    nbooks = 0
-    for file in os.listdir(release_dir):
-        if fnmatch.fnmatch(file, '*.ipynb'):
-            nb = os.path.join(release_dir,file)
-            print("copying {} to {}".format(nb,args.repo_name))
-            shutil.copy(nb,args.repo_name)
-            nbooks += 1
-    print("Copied {} notebooks".format(nbooks))
+    # Create directory and populate with files
+    if (mode == 'create' or mode == 'both'):
+        try:
+            os.mkdir(repo_name)
+            print("Creating new directory at {}".format(repo_name))
+        except FileExistsError as fee:
+            print("directory {} already exists; exiting".format(repo_name))
+            sys.exit(1)
 
-    do_git_things(args.org_name,args.repo_name,args.no_push)
+        # copy notebooks to repo
+        print("Getting notebooks")
+        release_dir = os.path.join(args.nbgrader_dir,'release', assignment)
+        nbooks = 0
+        for file in os.listdir(release_dir):
+            if fnmatch.fnmatch(file, '*.ipynb'):
+                nb = os.path.join(release_dir,file)
+                print("copying {} to {}".format(nb,repo_name))
+                shutil.copy(nb,repo_name)
+                nbooks += 1
+        print("Copied {} notebooks".format(nbooks))
+
+        add_readme(repo_name, assignment)
+        add_gitignore(repo_name)
+        do_local_git_things(repo_name)
+
+    # Push to github
+    if (mode == 'push' or mode == 'both'):
+        push_to_github(args.org_name,repo_name)
