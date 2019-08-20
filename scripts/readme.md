@@ -2,6 +2,8 @@
 
 The scripts in this directory allow us to interface between nbgrader and GitHub Classroom.
 
+All of the scripts assume that the current working directory is the nbgrader course dir.
+
 To get help for any script, simply run `python script.py -h`.  
 
 **make-template-repo.py**
