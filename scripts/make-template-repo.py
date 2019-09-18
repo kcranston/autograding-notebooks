@@ -1,8 +1,31 @@
+```
+When you create a GitHub Classroom assignment, you can provide a link to a template repository that contains information you want to provide to the students. In our case, we want to that repo to include any notebooks in the nbgrader `release` directory. This script copies notebooks from nbgrader/release, adds a readme and .gitignore, initializes a repository and pushes the repo to an (already existing) github repo.
+
+The first argument allows you to just create the local repo, just push to github, or both.
+
+Sample call: `make-template-repo.py create nbgrader-bootcamp assignment1`
+
+usage: make-template-repo.py [-h] [--org_name ORG_NAME]
+                             [{create,push,both}] nbgrader_dir assignment
+
+positional arguments:
+  {create,push,both}   Whether to {create} local repo, {push} to github, or
+                       both
+  nbgrader_dir         path to nbgrader directory
+  assignment           assignment name, e.g., "2019-01-31-stability" or
+                       "ea-04-bootcamp-spatial-data"
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --org_name ORG_NAME  name of GitHub Classroom organization; default = earth-
+                       analytics-edu
+
 # Create template repo for github classroom from released notebooks
 # for assignment in nbgrader directory; (fails if template dir already exists)
 
 # Template repo with name assignment-template must already exist in
 # GitHub organization
+```
 
 import sys
 import os
@@ -12,6 +35,25 @@ import subprocess
 import shutil
 
 def add_gitignore(repo_name):
+    """add gitignore file to template github repos
+
+    This function adds a .gitignore file to the specified repository. The file
+    is populated with .DStore and .ipynb_checkpoints
+
+    TODO: if you wanted to add additional ignore files, ... that could be a parameter
+
+    Assumes : ??? assumes the dir is in the same directory as ?? where and how does it look. 
+    Parameters
+    ----------
+    repo_name : string
+        The name of the repository that should be added
+
+
+    Returns
+    -------
+    Writes a .gitgnore file to specified repo
+    """
+
     filename = os.path.join(repo_name, '.gitignore')
     with open(filename, 'w') as f:
         f.write(".DStore\n")
